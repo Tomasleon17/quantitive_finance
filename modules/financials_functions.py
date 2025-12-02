@@ -4,88 +4,96 @@ import scipy.stats as stats
 from .backend import market_prices
 
 def portfolio_volatility(
-        df:pd.DataFrame, 
+        df:pd.DataFrame,
         vector_w:np.array
         ) -> float:
+   '''
+   Calculo de la volatlidad de un portafolio
+   de inversiones
+
+    df (pd.DataFrame):
+        Dataframe de Retornos del portafolio.
+    vector_w (np.array)
+        vector de pesos de los instrumentos del portafolio
+
+    Return (float): volatlidad del portafolio
     '''
-    Calculo de la volatilidad de un portafolio de inversiones.
-    
-    -df (pd.DataFrame):
-        DataFrame de Retornos del portafolio.
-    -vector_w (np.array): 
-        Vector de pesos de los instrumentos del portafolio.
-    
-    Return (float): Volatilidad del portafolio.
-    '''
+   
+   # matriz varianza covarianza
+   m_cov = df.cov()
 
-    # Matriz varianza - covarianza
-    m_cov = df.cov()
+   # vector transpuesto
+   vector_w_t = np.array([vector_w])
 
-    # Vector traspuesto
-    vector_w_t = np.array([vector_w])
+   # varianza
+   vector_cov = np.dot(m_cov,vector_w)
+   varianza = np.dot(vector_w_t, vector_cov)
 
-    # Varianza
-    vector_cov = np.dot(m_cov, vector_w)
-    varianza = np.dot(vector_w_t, vector_cov)
+   # volatilidad
+   vol = np.sqrt(varianza)
 
-    # Volatilidad
-    vol = np.sqrt(varianza)
+   return vol[0]
 
-    return vol
-    
 def portfolio_returns(
-        tickers: list, 
-        start: str,
-        end: str,
-            ) -> pd.DataFrame: 
+      tickers: list,
+      start: str,
+      end: str
+        ) -> pd.DataFrame:
     '''
-    Descarga desde la base de datos los precios 
-    de los instrumentos indicados en el rangon de fechas.
+    Descarga desde la base de datos los precios
+    de los instrumentos indicados en el rango de fechas.
 
-    tickers (list): 
-        Lista de nemos de instrumentos  que componenen el
-        portafolio.
-
-    start (str): 
-        Fecha de inicio de precios
-
-    end (str):
-        Fecha de termino de precios
+    tickers (list):
+        lista de nemos de instrumentos que componen
+        el portafolio
     
-    Return (pd.DataFrame): DataFrame de retornos diarios.
+    start (str):
+        fecha de inicio de precios
+    
+    end (str):
+        fecha de termino de precios
+    
+    Return (pd.DataFrame): Dataframe de retornos diarios
     '''
 
-    # Descargar precios
+    # descargar precios
     df = market_prices(
         start_date=start, 
-        end_date=end,
+        end_date=end, 
         tickers=tickers
         )
     
-    # Pivot retornos
+    # pivot retornos
     df_pivot = pd.pivot_table(
-    data=df, 
-    index='FECHA', 
-    columns='TICKER',
-    values='PRECIO_CIERRE',
-    aggfunc='max'
+        data=df, 
+        index='FECHA', 
+        columns='TICKER', 
+        values='PRECIO_CIERRE',
+        aggfunc='max'
     )
     df_pivot = df_pivot.pct_change().dropna()
 
+    return df_pivot
 
-    return df_pivot 
-
-def VaR(sigma:float, confidence: float) -> float:
+def VaR(sigma:float, confidence:float) -> float:
     '''
-    Cálculo del Value at Risk al nivel de confianza indicado. 
-    Con supuesto de media cero.
+    Calculo del Value at Risk al nivel de
+    confianza indicado. Con supuesto de media cero
     '''
 
-    # Estadistico Z al nivel de confianza
-    z_score = stats.norm.ppf(confidence) 
+    # estadistico z al nivel de confianza
+    z_score = stats.norm.ppf(confidence)
 
     # VaR
-    var = sigma * z_score
+    var = z_score * sigma
 
     return var
+
+
+
+
+
+
+
+
 
