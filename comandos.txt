@@ -1,0 +1,12 @@
+# == crear ambiente virtual ===
+
+#mac
+python3 -m venv .venv
+
+# == instalar librerias ==
+
+# === activar ambiente virtual ===
+source .venv/bin/activate
+
+#mac
+pip3 install -r requirements.txt
